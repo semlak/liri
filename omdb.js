@@ -22,6 +22,8 @@ OMDB.prototype.getKey = function() {
 	return this.apikey;
 }
 
+
+
 OMDB.prototype.searchTitle = function(title, plot, callback) {
 	// assumes input title has already been validated as a nonnull string
 	// in title, replace any instances of multiple spaces with a single "+"
@@ -37,10 +39,44 @@ OMDB.prototype.searchTitle = function(title, plot, callback) {
       	else {
 	      	// console.log("response", response);
 	      	// console.log("body", body);
-	      	callback(body);
+	      	if (typeof callback === "function") {
+	      		callback(JSON.parse(body));
+	      	}
       	}
       })
       // return url;
+}
+
+
+OMDB.prototype.liriPrint = function (movieData) {
+	// console.log (movieData);
+	movieData.RottenRating = movieData.Ratings.filter(ratingData => ratingData.Source === "Rotten Tomatoes")[0].Value
+	let keysToPrint = ["Title", "Year", "imdbRating", "RottenRating", "Country", "Language", "Plot", "Actors"]
+	let prettyKeyNames = {
+		Title: "Title",
+		Year: "Release Year",
+		imdbRating: "IMDB Rating",
+		RottenRating: "Rotten Tomatoes Rating",
+		Country: movieData.Country.split(", ").length > 1 ? "Release Countries" : "Release Country",
+		Language: "Language",
+		Plot: "Plot",
+		Actors: "Actors"
+	}
+	keysToPrint.forEach(key => console.log("** " + prettyKeyNames[key] + ": " + movieData[key]));
+}
+
+OMDB.prototype.liriTitle = function(queryData) {
+	if (typeof queryData === "string") {
+		//assume input is title
+		queryData = {title: queryData}
+	}
+	else if (typeof movieData === "null" || typeof movieData === "undefined" ) {
+		queryData = {title : undefined}
+	}
+
+	if ("title" in queryData ) {
+		this.searchTitle(queryData.title, "short", this.liriPrint);
+	}
 }
 
 module.exports = OMDB;
