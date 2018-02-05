@@ -28,25 +28,28 @@ OMDB.prototype.searchTitle = function(title, plot, callback) {
 	// assumes input title has already been validated as a nonnull string
 	// in title, replace any instances of multiple spaces with a single "+"
 	// if no plot type is provided, assume short
-	let url = baseURL + "?t=" + (title || this.defaultMovieTitle).trim().replace(/ +/, "+")
+	let urlSafeTitle = (title || this.defaultMovieTitle).trim().replace(/ +/, "+")
+	let url = baseURL + "?t=" + urlSafeTitle
 	+ "&y=&plot=" + (plot || "short") + "&apikey=" + this.apikey
 	+ "&type=movie"
-      // url: "https://www.omdbapi.com/?t=romancing+the+stone&y=&plot=short&apikey=trilogy",
+	// console.log("url", url);
       request(url, function(error, response, body) {
       	if (error) {
-      		console.log("error", error);
+      		callback("error");
+      		callback(error);
       	}
       	else if (response.statusCode !== 200) {
-      		console.log("OMDB Response status code: " + response.statusCode);
+      		callback("OMDB Response status code: " + response.statusCode);
       	}
       	else {
 	      	// console.log("response", response);
 	      	// console.log("body", body);
 	      	if (typeof callback === "function") {
-	      		callback(JSON.parse(body));
+	      		callback("command: movie-this \"" + title + "\"");
+	      		callback(this.liriPrint(JSON.parse(body)));
 	      	}
       	}
-      })
+      }.bind(this))
       // return url;
 }
 
@@ -55,9 +58,15 @@ OMDB.prototype.liriPrint = function (movieData) {
 	// console.log (movieData);
 	// movieData.RottenRating = movieData.Ratings.filter(ratingData => ratingData.Source === "Rotten Tomatoes")[0].Value
 	// console.log(movieData.Ratings);
-	let rottenData = movieData.Ratings.find(ratingData => ratingData.Source === "Rotten Tomatoes");
+	// console.log(movieData);
+	let requiredKeys = ["Title", "Year", "imdbRating", "Ratings", "Country", "Language", "Plot", "Actors"]
+	if (!requiredKeys.every(key => movieData[key])) {
+		return "Movie Data does not have all required keys."
+	}
+	let rottenData = movieData.Ratings ? movieData.Ratings.find(ratingData => ratingData.Source === "Rotten Tomatoes") : null;
 	movieData.RottenRating = rottenData ? rottenData.Value : "Not provided"
-	let keysToPrint = ["Title", "Year", "imdbRating", "RottenRating", "Country", "Language", "Plot", "Actors"]
+	// let keysToPrint = ["Title", "Year", "imdbRating", "RottenRating", "Country", "Language", "Plot", "Actors"]
+	let keysToPrint = requiredKeys.map(key => key !== "Ratings" ? key : "RottenRating");
 	let prettyKeyNames = {
 		Title: "Title",
 		Year: "Release Year",
@@ -69,9 +78,9 @@ OMDB.prototype.liriPrint = function (movieData) {
 		Actors: "Actors"
 	}
 	// keysToPrint.forEach(key => console.log("** " + prettyKeyNames[key] + ": " + movieData[key]));
-	let output =  keysToPrint.map(key => "** " + prettyKeyNames[key] + ": " + movieData[key]).join("\n");
+	let output =  keysToPrint.map(key => prettyKeyNames[key] + ": " + movieData[key]).join("\n");
 	// console.log("output", output);
-	return output;
+	return (output);
 
 }
 
@@ -85,9 +94,10 @@ OMDB.prototype.liriTitle = function(queryData, callback) {
 	}
 
 	if ("title" in queryData ) {
-		let newCallback = input => callback(OMDB.prototype.liriPrint(input));
+		// let newCallback = (input) => callback(this.liriPrint(input));
+		// let newCallback = (input) => this.liriPrint(input, callback);
 		// this.searchTitle(queryData.title, "short", this.liriPrint);
-		this.searchTitle(queryData.title, "short", newCallback);
+		this.searchTitle(queryData.title, "long", callback);
 	}
 }
 
