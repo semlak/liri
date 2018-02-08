@@ -65,7 +65,7 @@ MySpot.prototype.spotifyThisSong = function(args, loggerCallback) {
 			}.bind(this))
 
 	}.bind(this)).catch(function(err) {
-		loggerCallback("spotifyThis error: ");
+		loggerCallback("spotifyThis error for track '" + trackQuery + "': ");
 		loggerCallback(err.message ? err.message : "Error retrieving spotify data");
 	})
 
