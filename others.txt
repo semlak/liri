@@ -1,9 +1,10 @@
 #the input file can have empty lines and comments (beggining with pound sign ('#'))
 
-#spotify-this-song,"I Want it That Way"
+spotify-this-song,"I Want it That Way"
 
 #all requests can have arguments with multiple words, but they don't need quotes.
-# movie-this, empire strikes back
+movie-this, "empire strikes back"
+movie-this,Galaxy quest
 
 #spotify-this-song requests can specify an artist, with the song name first (with or without quotes), followed by the word "by", followed by artist
 #the artist name to match can be partial. Basically, if the string provided by the user occurs in any of the artists names, it will match
@@ -11,20 +12,21 @@ spotify-this-song,"Listen to your Heart" BY roxette
 spotify-this-song, the look by roxette
 
 #looking for the track "snow" by "Red Hot Chili Peppers", the following should work
-# spotify-this-song, snow by red hot
+spotify-this-song, snow by red hot
 
 # a song with the word "by" occurring in the name needs to have quotations around it to avoid making liri think that the user is putting an artist
 # for instance, finding the track "Trial by fire" by Journey, would need
 spotify-this-song, "trial by fire"
-spotify-this-song, "trial by fire" by journey
+spotify-this-song, "trial by fire", by journey
 
 #where as the following search would look for a track with name "trial" with artist "fire"
 #spotify-this-song, trial by fire
 
 spotify-this-song, Piano Man by billy joel
 spotify-this-song, separate ways by journey
-movie-this, Galaxy quest
 
 #my-tweets command takes optional screen_name. default is CNN
-# my-tweets
-# my-tweets, GeorgeTakei
+my-tweets
+# the command works with or without a comma
+# my-tweets,
+my-tweets, GeorgeTakei

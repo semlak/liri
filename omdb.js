@@ -1,8 +1,7 @@
+'use strict'
 
 
 const baseURL = "https://www.omdbapi.com/"
-// let apikey = argv[2]
-// console.log("apikey", apikey);
 const defaultMovieTitle = "Mr. Nobody"
 
 
@@ -24,7 +23,7 @@ OMDB.prototype.getKey = function() {
 
 
 
-OMDB.prototype.searchTitle = function(title, plot, callback) {
+OMDB.prototype.searchTitle = function(title, plot, loggerCallback) {
 	// assumes input title has already been validated as a nonnull string
 	// in title, replace any instances of multiple spaces with a single "+"
 	// if no plot type is provided, assume short
@@ -32,40 +31,38 @@ OMDB.prototype.searchTitle = function(title, plot, callback) {
 	let url = baseURL + "?t=" + urlSafeTitle
 	+ "&y=&plot=" + (plot || "short") + "&apikey=" + this.apikey
 	+ "&type=movie"
-	// console.log("url", url);
       request(url, function(error, response, body) {
       	if (error) {
-      		callback("error");
-      		callback(error);
+      		loggerCallback("error:");
+      		loggerCallback(error);
       	}
       	else if (response.statusCode !== 200) {
-      		callback("OMDB Response status code: " + response.statusCode);
+      		loggerCallback("OMDB Response status code: " + response.statusCode);
       	}
       	else {
-	      	// console.log("response", response);
-	      	// console.log("body", body);
-	      	if (typeof callback === "function") {
-	      		callback("command: movie-this \"" + title + "\"");
-	      		callback(this.liriPrint(JSON.parse(body)));
+	      	if (typeof loggerCallback === "function") {
+	      		loggerCallback("Output for command: movie-this \"" + title + "\"");
+
+	      		let result = JSON.parse(body);
+	      		if (result.Error) {
+	      			loggerCallback(result.Error);
+	      		}
+	      		else {
+		      		loggerCallback(this.liriPrint(result));
+	      		}
 	      	}
       	}
       }.bind(this))
-      // return url;
 }
 
 
 OMDB.prototype.liriPrint = function (movieData) {
-	// console.log (movieData);
-	// movieData.RottenRating = movieData.Ratings.filter(ratingData => ratingData.Source === "Rotten Tomatoes")[0].Value
-	// console.log(movieData.Ratings);
-	// console.log(movieData);
 	let requiredKeys = ["Title", "Year", "imdbRating", "Ratings", "Country", "Language", "Plot", "Actors"]
 	if (!requiredKeys.every(key => movieData[key])) {
 		return "Movie Data does not have all required keys."
 	}
 	let rottenData = movieData.Ratings ? movieData.Ratings.find(ratingData => ratingData.Source === "Rotten Tomatoes") : null;
 	movieData.RottenRating = rottenData ? rottenData.Value : "Not provided"
-	// let keysToPrint = ["Title", "Year", "imdbRating", "RottenRating", "Country", "Language", "Plot", "Actors"]
 	let keysToPrint = requiredKeys.map(key => key !== "Ratings" ? key : "RottenRating");
 	let prettyKeyNames = {
 		Title: "Title",
@@ -77,14 +74,12 @@ OMDB.prototype.liriPrint = function (movieData) {
 		Plot: "Plot",
 		Actors: "Actors"
 	}
-	// keysToPrint.forEach(key => console.log("** " + prettyKeyNames[key] + ": " + movieData[key]));
 	let output =  keysToPrint.map(key => prettyKeyNames[key] + ": " + movieData[key]).join("\n");
-	// console.log("output", output);
 	return (output);
 
 }
 
-OMDB.prototype.liriTitle = function(queryData, callback) {
+OMDB.prototype.liriTitle = function(queryData, loggerCallback) {
 	if (typeof queryData === "string") {
 		//assume input is title
 		queryData = {title: queryData}
@@ -94,10 +89,7 @@ OMDB.prototype.liriTitle = function(queryData, callback) {
 	}
 
 	if ("title" in queryData ) {
-		// let newCallback = (input) => callback(this.liriPrint(input));
-		// let newCallback = (input) => this.liriPrint(input, callback);
-		// this.searchTitle(queryData.title, "short", this.liriPrint);
-		this.searchTitle(queryData.title, "long", callback);
+		this.searchTitle(queryData.title, "long", loggerCallback);
 	}
 }
 
