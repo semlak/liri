@@ -63,35 +63,13 @@ module.exports = class OMDB {
 							Actors: "Actors"
 						}
 
-			      		loggerCallback((result, prettyKeyNames));
+			      		loggerCallback(this.liriPrint.go(result, prettyKeyNames));
 		      		}
 		      	}
 	      	}
 	      }.bind(this))
 	}
 
-
-	prepareLiriPrint(movieData) {
-		let requiredKeys = ["Title", "Year", "imdbRating", "Ratings", "Country", "Language", "Plot", "Actors"]
-		if (!requiredKeys.every(key => movieData[key])) {
-			return "Movie Data does not have all required keys."
-		}
-		let rottenData = movieData.Ratings ? movieData.Ratings.find(ratingData => ratingData.Source === "Rotten Tomatoes") : null;
-		movieData.RottenRating = rottenData ? rottenData.Value : "Not provided"
-		let keysToPrint = requiredKeys.map(key => key !== "Ratings" ? key : "RottenRating");
-		let prettyKeyNames = {
-			Title: "Title",
-			Year: "Release Year",
-			imdbRating: "IMDB Rating",
-			RottenRating: "Rotten Tomatoes Rating",
-			Country: movieData.Country.split(", ").length > 1 ? "Release Countries" : "Release Country",
-			Language: "Language",
-			Plot: "Plot",
-			Actors: "Actors"
-		}
-		return this.liriPrint.go(movieData, prettyKeyNames);
-
-	}
 
 	liriTitle(queryData, loggerCallback) {
 		if (typeof queryData === "string") {
